@@ -65,53 +65,57 @@ def loadimgs(path,n=0):
     X=[]
     y = []
     #category_images = []
-    landmark_dict = {}
+    category_dict = {}
     curr_y = n #each different letter has defferent y as label
     #we load every alphabet seperately so we can isolate them later
-    for landmark in os.listdir(os.path.join(path, 'images')):
-        print("loading landmark: " + landmark)
-        category_images = []
-        landmark_dict[landmark] = [curr_y, None]
+    for category in os.listdir(path):
+        print("loading category: " + category)
+        category_dict[category] = [curr_y, None]
+        landmark_path = os.path.join(path, category)
         #every letter/category has it's own column in the array, so  load seperately
-        image_list = os.listdir(os.path.join(path, 'images', landmark))
-        for image_name in image_list:
-            image = cv2.imread(os.path.join(path,'images',landmark,image_name), cv2.IMREAD_GRAYSCALE)
-            category_images.append(image) #shape of category_imagws for omnilogts: 20*105*105*1
-            y.append(curr_y)
-        try:
-            X.append(np.stack(category_images))
-        #edge case  - last one
-        except ValueError as e:
-            print(e)
-            print("error - category_images:", category_images)
-        curr_y += 1
-        landmark_dict[landmark][1] = curr_y - 1
+        for landmark in os.listdir(landmark_path):
+            category_images = []
+            image_path = os.path.join(landmark_path, landmark)
+            for image_name in os.listdir(image_path):
+                image = cv2.imread(os.path.join(image_path, image_name), cv2.IMREAD_GRAYSCALE)
+                image = cv2.resize(image, (105, 105))
+                category_images.append(image) #shape of category_imagws for omnilogts: 20*105*105*1
+                y.append(curr_y)
+            try:
+                X.append(np.stack(category_images))
+            #edge case  - last one
+            except ValueError as e:
+                print(e)
+                print("error - category_images:", category_images)
+                continue
+            curr_y += 1
+            category_dict[category][1] = curr_y - 1
     y = np.vstack(y)
     X = np.stack(X)
-    return X,y,landmark_dict
+    return X, y, landmark_dict
 
 
 if __name__ == '__main__':
 
     X,y,c=loadimgs(train_folder) #shape of X: C*N*w*h*1. C:classes of letters; N:number of letters per class
     with open(os.path.join(save_path,"train_landmark.pickle"), "wb") as f:
-        pickle.dump((X,c),f)
+        pickle.dump((X, c), f)
 
 
     X,y,c=loadimgs(val_folder)
     with open(os.path.join(save_path,"val_landmark.pickle"), "wb") as f:
-        pickle.dump((X,c),f)
+        pickle.dump((X, c), f)
 
 
-
-    # val_list = os.listdir(os.path.join(val_folder, 'landmarks'))
-    # for image_name in val_list:
+    #
+    # train_list = os.listdir(os.path.join(train_folder, 'complex_nature'))
+    # for image_name in train_list:
     #     if image_name[-3:] == 'bmp':
     #         image_id = image_name[:-4]
-    #         image_dir = os.path.join(val_folder,'images', image_id)
+    #         image_dir = os.path.join(train_folder, 'complex_nature',image_id)
     #         if not os.path.isdir(image_dir):
     #             os.makedirs(image_dir)
-    #         image = cv2.imread(os.path.join(val_folder,'landmarks', image_name))
+    #         image = cv2.imread(os.path.join(train_folder, 'complex_nature', image_name))
     #         image = cv2.resize(image, (105, 105), interpolation=cv2.INTER_CUBIC)
     #         image = np.mean(image, -1, keepdims=True)
     #         for i in range(image_per_landmark):
