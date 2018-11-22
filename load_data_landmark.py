@@ -21,7 +21,7 @@ val_folder = os.path.join(data_path, 'val')
 save_path = args.save
 image_per_landmark = 20
 
-landmark_dict = {}
+#landmark_dict = {}
 
 def distort_img(image):
     '''
@@ -92,7 +92,7 @@ def loadimgs(path,n=0):
             category_dict[category][1] = curr_y - 1
     y = np.vstack(y)
     X = np.stack(X)
-    return X, y, landmark_dict
+    return X, y, category_dict
 
 
 if __name__ == '__main__':

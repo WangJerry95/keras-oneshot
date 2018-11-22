@@ -2,6 +2,7 @@ from keras.layers import Input, Convolution2D, Lambda, merge, Dense, Flatten,Max
 from keras.models import Model, Sequential
 from keras import backend as K
 from keras.optimizers import SGD
+from keras.callbacks import Callback
 import numpy.random as rng
 import numpy as np
 import dill as pickle
@@ -55,5 +56,14 @@ class Siamese_Loader:
                 n_correct+=1
         percent_correct = (100.0*n_correct / k)
         return percent_correct
-    
 
+
+class EvaluateAccuracy(Callback):
+    def __init__(self, dataloader, N_way, n_val):
+        self.dataloader = dataloader
+        self.N_way = N_way
+        self.n_val = n_val
+
+    def on_epoch_end(self, epoch, logs=None):
+        print("evaluating")
+        val_acc = self.dataloader.test_oneshot(self.model, self.N_way, self.n_val, verbose=True)
